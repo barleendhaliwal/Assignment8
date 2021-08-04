@@ -75,7 +75,6 @@ router.post("/", (req: Request, res: Response) => {
 
 
     if (!newMember.firstName || !newMember.lastName || !newMember.email || !newMember.phoneNumber || !newMember.role || !newMember.address) {
-        console.log(newMember)
         res.status(400).json({ message: `Give Correct Input` })
     }
     if (newMember.phoneNumber.length !== 10) {
@@ -88,14 +87,12 @@ router.post("/", (req: Request, res: Response) => {
                 throw err
             }
             if (result.rows.length !== 0) {
-                console.log(result);
                 //method not allowed: The server has received and recognized the request, but has rejected the specific request method
                 res.status(405).json({ message: `User Already Exists` })
             }
             else {
 
                 const queryValidationRole = `SELECT key from role where key =${newMember.role};`;
-                console.log(queryValidationRole);
                 pool.query(queryValidationRole, (err:any, resultRole:any) => {
                     if (err) {
                         throw err;
@@ -107,7 +104,6 @@ router.post("/", (req: Request, res: Response) => {
                     else {
 
                         const queryValidationCustomer = `SELECT id from customers where LOWER(name)=LOWER('${newMember.customerName}');`;
-                        console.log(queryValidationCustomer);
                         pool.query(queryValidationCustomer, (err:any, resultCustomer:any) => {
                             if (err) {
                                 throw err;
@@ -168,7 +164,6 @@ router.put('/:id', (req: Request, res: Response) => {
             else {
 
                 const queryValidationRole = `SELECT key from role where key=${role};`;
-                console.log(queryValidationRole);
                 pool.query(queryValidationRole, (err:any, resultRole:any) => {
                     if (err) {
                         throw err;
@@ -179,7 +174,6 @@ router.put('/:id', (req: Request, res: Response) => {
                     }
                     else {
                         const queryValidationCustomer = `SELECT id from customers where LOWER(name)=LOWER('${customerName}');`;
-                        console.log(queryValidationCustomer);
                         pool.query(queryValidationCustomer, (err:any, resultCustomer:any) => {
                             if (err) {
                                 throw err;
@@ -190,8 +184,6 @@ router.put('/:id', (req: Request, res: Response) => {
                             }
                             else {
                                 const query = `UPDATE users SET "firstName"='${firstName}', "middleName"='${middleName}', "lastName"='${lastName}', email='${email}', "phoneNumber"='${phoneNumber}', role=${role}, address='${address}', "customerId"='${resultCustomer.rows[0].id}' where id=${id};`;
-
-                                console.log(query);
                                 pool.query(query, (err:any, result:any) => {
                                     if (err) {
                                         throw err
@@ -237,7 +229,6 @@ router.delete('/:id', (req: Request, res: Response) => {
         else {
 
             const query = `DELETE from users where id=${id};`;
-            console.log(query);
             pool.query(query, (error: any, result: any) => {
                 if (error) {
                     throw error
