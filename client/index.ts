@@ -1,29 +1,20 @@
-// enum Role { SUPERADMIN, ADMIN, SUBSCRIBER };
-//Removing enum as now this is being handled by the server side
-
-type NewUser = {
-    firstName: string;
-    middleName: string;
-    lastName: string;
-    email: string;
-    phoneNumber: string;
-    role: string;
-    address: string;
-    customerName: string;
+// import * as dotenv from 'dotenv';
+// dotenv.config();
+enum Role { SUPERADMIN, ADMIN, SUBSCRIBER };
+const baseUrl = `http://localhost:3000/users/`;
+//in strict mode need to tell ts that it won't be Null.
+class User {
+    id!: number;
+    firstName!: string;
+    middleName!: string;
+    lastName!: string;
+    email!: string;
+    phoneNumber!: string;
+    role!: number;
+    address!: string;
+    customerName!:string;
 
 }
-type User = {
-    id: number;
-    firstName: string;
-    middleName: string;
-    lastName: string;
-    email: string;
-    phoneNumber: string;
-    role: string;
-    address: string;
-    customerName: string;
-}
-let crudObject: Crud<User>;  //array of objects to be displayed on frontend
 
 //DECORATOR FACTORY
 function FormatDate() {
@@ -51,62 +42,62 @@ class Crud<T> {
 
     update(id: number, index: number, updatedObject: T) {
 
-
         editUser(id, updatedObject).then((response) => {
 
-            if (response.updatedRecord) {
-                this.items[index] = response.updatedRecord;
-            }
+            this.items[index] = response.updatedRecord;
             alert(response.message);
-
             showTable()
-
-        }).catch((error) => {
-            console.log(error);
+        }).catch(() => {
             alert("Unexpected Error Occured !")
         })
     }
-    delete(id: number, index: number, object: T): void {
+    delete(id: number, index: number, object: T): Promise<any> {
 
-        //make api call to delete data 
-        deleteUser(id).then((response) => {
-            //delete data on front end
+        return new Promise((resolve, reject) => {
 
-            this.items.splice(index, 1);
-            alert(response.message);
-            showTable()
-        }
-        ).catch(() => { alert("Unexpected Error Occured !") })
+            let success = false;
+            //make api call to delete data 
+            deleteUser(id).then((response) => {
+
+                alert(response.message);
+                success = true;
+                resolve(success)
+
+            }
+            ).catch(() => {
+                alert("Unexpected Error Occured !")
+
+            })
+        })
+
 
     }
 
 }
 
+let crudObject = new Crud<User>();  //array of objects to be displayed on frontend
+
 //API CALLS ========================================================================================================================================
-async function addUser(object: NewUser) {
+async function addUser(firstName: string, middleName: string, lastName: string, email: string, phoneNumber: string, role: number, address: string) {
 
-    // let objectAdd={
-    //     firstName:object.firstName,
-    //     middleName:object.middleName,
-    //     lastName:object.lastName,
-    //     email:object.email,
-    //     phoneNumber:object.phoneNumber,
-    //     role:Role[object.role],
-    //     address:object.address,
-    //     customerName:object.customerName
-
-    // }
-
-    let response = await fetch(`http://localhost:3000/api/`, {
+    let newMember = {
+        firstName: firstName,
+        middleName: middleName,
+        lastName: lastName,
+        email: email,
+        phoneNumber: phoneNumber,
+        role: role,
+        address: address
+    }
+    let response = await fetch(baseUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
 
         },
-        body: JSON.stringify(object)
+        body: JSON.stringify(newMember)
     })
     let data = await response.json()
-    //console.log(data);
     return data;
 
 }
@@ -114,15 +105,14 @@ async function addUser(object: NewUser) {
 
 async function getUsers() {
 
-    let response = await fetch('http://localhost:3000/api');
+    let response = await fetch(baseUrl);
     let users = await response.json() as User[];
-    //console.log(users)
     return users; // same as Promise.resolve(users)
 
 }
 async function deleteUser(id: number) {
 
-    let response = await fetch(`http://localhost:3000/api/${id}`, {
+    let response = await fetch(baseUrl + id, {
         method: 'DELETE'
     })
     let data = await response.json()
@@ -132,9 +122,7 @@ async function deleteUser(id: number) {
 }
 async function editUser<T>(id: number, object: T) {
 
-
-
-    let response = await fetch(`http://localhost:3000/api/${id}`, {
+    let response = await fetch(baseUrl + id, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json'
@@ -143,7 +131,6 @@ async function editUser<T>(id: number, object: T) {
         body: JSON.stringify(object)
     })
     let data = await response.json()
-    console.log(data)
     return data;
 
 
@@ -171,15 +158,15 @@ function editRow(no: number) {
 
     //MAKE ROW EDITABLE 
 
-    let rowId = document.getElementById("row" + no + "Id")!;
     let rowFname = document.getElementById("row" + no + "Fname")!;
     let rowMname = document.getElementById("row" + no + "Mname")!;
     let rowLname = document.getElementById("row" + no + "Lname")!;
     let rowEmail = document.getElementById("row" + no + "Email")!;
     let rowPhone = document.getElementById("row" + no + "Phone")!;
-    let rowRole = document.getElementById("row" + no + "Role")!;
+    let rowRole = <HTMLSelectElement>document.getElementById("row" + no + "SelectRole")!;
     let rowAddress = document.getElementById("row" + no + "Address")!;
-    let customerName = document.getElementById("row" + no + "CustomerName")!;
+    let rowCustomerName = document.getElementById("row" + no + "CustomerName")!;
+
 
 
     rowFname.setAttribute("contenteditable", "true");
@@ -187,9 +174,9 @@ function editRow(no: number) {
     rowLname.setAttribute("contenteditable", "true");
     rowEmail.setAttribute("contenteditable", "true");
     rowPhone.setAttribute("contenteditable", "true");
-    rowRole.setAttribute("contenteditable", "true");
+    rowRole.disabled=false;
     rowAddress.setAttribute("contenteditable", "true");
-    customerName.setAttribute("contenteditable", "true");
+    rowCustomerName.setAttribute("contenteditable", "true");
 }
 
 
@@ -202,16 +189,15 @@ function getCurrentRowData(no: number) {
     let rowLname = document.getElementById("row" + no + "Lname")!.innerHTML;
     let rowEmail = document.getElementById("row" + no + "Email")!.innerHTML;
     let rowPhone = document.getElementById("row" + no + "Phone")!.innerHTML;
-    let role = document.getElementById("row" + no + "Role")!.innerHTML;
+    let rowRole = +(<HTMLSelectElement>document.getElementById("row" + (no) + "SelectRole")).value;
     let rowAddress = document.getElementById("row" + no + "Address")!.innerHTML;
-    let customerName = document.getElementById("row" + no + "CustomerName")!.innerHTML;
-    // let r = -1;
-    // if (rowRole.toLowerCase() === "superadmin")
-    //     r = 0;
-    // else if (rowRole.toLowerCase() === "admin")
-    //     r = 1;
-    // else
-    //     r = 2;
+    let rowCustomerName = document.getElementById("row" + no + "CustomerName")!.innerHTML;
+    if (rowRole === Role.SUPERADMIN)
+        rowRole = 0;
+    else if (rowRole === Role.ADMIN)
+        rowRole = 1;
+    else
+        rowRole = 2;
 
     let object: User = {
         id: parseInt(rowId),
@@ -220,9 +206,9 @@ function getCurrentRowData(no: number) {
         lastName: rowLname,
         email: rowEmail,
         phoneNumber: rowPhone,
-        role: role,
+        role: rowRole,
         address: rowAddress,
-        customerName: customerName
+        customerName:rowCustomerName
 
     }
 
@@ -230,18 +216,16 @@ function getCurrentRowData(no: number) {
     return object;
 }
 
-
+//function responsible for creating table from CrudObject and displaying it to user. 
 function showTable() {
 
-    //console.log("showtable");
 
     let table: HTMLTableElement = <HTMLTableElement>document.createElement("table"); // TS knows that only a generic html element is returned by createElement, hence we need to specify
     table.className = 'table table-hover';
 
     // EXTRACT VALUE FOR HTML HEADER. 
     let tr = table.insertRow(-1);
-    let headerElements = ["ID", "First Name", "Middle Name", "Last Name", "Email", "Phone Number", "Role", "Address", "Customer Name"];
-    console.log(crudObject.items)
+    let headerElements = ["id", "First Name", "Middle Name", "Last Name", "Email", "Phone Number", "Role", "Address","Customer Name"];
 
     for (let i = 0; i < headerElements.length; i++) {
         let th = document.createElement("th");      // TABLE HEADER.
@@ -273,7 +257,7 @@ function showTable() {
 
     for (let i = 0; i < crudObject.items.length; i++) {
 
-        //console.log(crudObject.items)
+
         tr = table.insertRow(-1);
 
         tr.id = "row" + (i);
@@ -310,9 +294,25 @@ function showTable() {
         cell6.id = "row" + (i) + "Phone";
 
         let cell7 = tr.insertCell(-1);
-        //let role = Role[crudObject.items[i].role];
-        cell7.innerHTML = crudObject.items[i].role;
         cell7.id = "row" + (i) + "Role";
+        let selectRoleList = document.createElement("select");
+        selectRoleList.id = "row" + (i) + "SelectRole";
+        selectRoleList.setAttribute("disabled","true")
+        let role = +crudObject.items[i].role;
+        cell7.appendChild(selectRoleList)
+
+        for (let i in Role) {
+
+            if (Number.isInteger(Role[i])) {
+                let option = document.createElement("option");
+                option.value = Role[i];
+                option.text = i;
+                selectRoleList.appendChild(option);
+
+            }
+
+        }
+        selectRoleList.selectedIndex = role;
 
 
         let cell8 = tr.insertCell(-1);
@@ -321,9 +321,10 @@ function showTable() {
         cell8.id = "row" + (i) + "Address";
 
         let cell9 = tr.insertCell(-1);
-        let customerName = crudObject.items[i].customerName;
-        cell9.innerHTML = customerName;
+        let customer = crudObject.items[i].customerName;
+        cell9.innerHTML = customer;
         cell9.id = "row" + (i) + "CustomerName";
+
 
         cell2.className = "editable";
         cell3.className = "editable";
@@ -333,7 +334,6 @@ function showTable() {
         cell7.className = "editable";
         cell8.className = "editable";
         cell9.className = "editable";
-
         //BUTTONS ON EACH ROW
 
         //EDIT
@@ -360,7 +360,17 @@ function showTable() {
                     break;
                 }
             }
-            crudObject.delete(id, index, deleteObject);
+            crudObject.delete(id, index, deleteObject).then(value => {
+
+                getUsers().then(usersArray => {
+                    crudObject.items = usersArray;
+                    showTable();
+                }).catch(() => {
+                    alert("Unexpected Error Occured !")
+                })
+            }).catch(() => {
+                alert("Unexpected Error Occured !")
+            })
         });
 
         //SAVE
@@ -379,7 +389,6 @@ function showTable() {
             //Finding index of previous object in items Array
             let index = -1;
             for (let i = 0; i < crudObject.items.length; i++) {
-                console.log(crudObject.items[i]);
                 if (crudObject.items[i].id === id) {
                     index = i;
                     break;
@@ -422,59 +431,60 @@ function showTable() {
 
 }
 
+//function which is called when load data button is clicked
+function loadData() {
 
-function main() {
-
-    const result = document.getElementById('showData')!
     getUsers()
         .then(usersArray => {
 
-
-            crudObject = new Crud<User>(); //creating object of crud with generic type of user
+            crudObject.items = [];
             usersArray.forEach(function (object: User) { crudObject.add(object) }) //pushing objects obtained via api into array
             showTable();
-            // Promise.resolve();
+
 
         })
         .catch(() => {
-            console.log('get');
             alert("Unexpected Error Occured !")
         })
 
 }
-
-function addUserMain(e: any) {
-
+//function which is called when new user form is submitted. Function gets input from form and send to addUser function to make post request
+function addUserSubmit(e: any) {
     e.preventDefault();
-    console.log("Add user");
     let firstName = (<HTMLInputElement>document.getElementById("addUserFirstName")!).value;
     let middleName = (<HTMLInputElement>document.getElementById("addUserMiddleName")!).value;
     let lastName = (<HTMLInputElement>document.getElementById("addUserLastName")!).value;
     let email = (<HTMLInputElement>document.getElementById("addUserEmail")!).value;
     let phoneNumber = (<HTMLInputElement>document.getElementById("addUserPhoneNumber")!).value;
-    let role = (<HTMLInputElement>document.getElementById("addUserRole")!).value;
+    let role = +(<HTMLSelectElement>document.getElementById("addUserRole")!).value;
     let address = (<HTMLInputElement>document.getElementById("addUserAddress")!).value;
-    let customerName = (<HTMLInputElement>document.getElementById("addUserCustomerName")!).value;
 
-    let newMember = {
-        firstName: firstName,
-        middleName: middleName,
-        lastName: lastName,
-        email: email,
-        phoneNumber: phoneNumber,
-        role: role,
-        address: address,
-        customerName: customerName
-    }
-    addUser(newMember).then((response) => {
+    if (role === Role.SUPERADMIN)
+        role = 0;
+    else if (role === Role.ADMIN)
+        role = 1;
+    else
+        role = 2;
+
+
+
+    addUser(firstName, middleName, lastName, email, phoneNumber, role, address).then((response) => {
         alert(response.message);
 
+    }).then(() => {
+        getUsers().then((usersArray) => {
+            crudObject.items = usersArray;
+            showTable();
+
+
+        })
     }).catch(() => {
-        console.log('update');
         alert("Unexpected Error Occured !")
+
     })
 
 
 
     return false;
+    //false because we don't want to submit form anywhere
 }
