@@ -154,7 +154,7 @@ router.put('/:id', (req: Request, res: Response) => {
         }
         if (result.rows.length === 0) {
 
-            res.status(404).json({ message: `User Does Not Exists` }) //404 - Requested for resource which doesn't exist
+            res.status(404).json({ message: `User Does Not Exists`, success:0 }) //404 - Requested for resource which doesn't exist
             return;
         }
         else {
@@ -167,7 +167,7 @@ router.put('/:id', (req: Request, res: Response) => {
             let address = req.body.address;
             let customerName = req.body.customerName;
             if (phoneNumber.length !== 10) {
-                res.status(400).json({ message: `Phone Number must be 10 digits` })
+                res.status(400).json({ message: `Phone Number must be 10 digits` ,success:0})
                 return;
 
             }
@@ -191,7 +191,7 @@ router.put('/:id', (req: Request, res: Response) => {
                             }
                             if (resultCustomer.rows.length == 0) {
                                 //405 - method not allowed
-                                res.status(405).json({ message: `Customer does not exist !` })
+                                res.status(405).json({ message: `Customer does not exist !`,success:0 })
                                 return;
                             }
                             else {
@@ -211,8 +211,8 @@ router.put('/:id', (req: Request, res: Response) => {
                                             role: role,
                                             address: address,
                                             customerName: customerName
-                                        }
-                                    })
+                                        },
+                                        success:1                                    })
 
                                 })
                             }

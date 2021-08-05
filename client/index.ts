@@ -12,7 +12,7 @@ class User {
     phoneNumber!: string;
     role!: number;
     address!: string;
-    customerName!:string;
+    customerName!: string;
 
 }
 
@@ -43,8 +43,9 @@ class Crud<T> {
     update(id: number, index: number, updatedObject: T) {
 
         editUser(id, updatedObject).then((response) => {
-
-            this.items[index] = response.updatedRecord;
+            if (response.success) {
+                this.items[index] = response.updatedRecord;
+            }
             alert(response.message);
             showTable()
         }).catch(() => {
@@ -78,7 +79,7 @@ class Crud<T> {
 let crudObject = new Crud<User>();  //array of objects to be displayed on frontend
 
 //API CALLS ========================================================================================================================================
-async function addUser(firstName: string, middleName: string, lastName: string, email: string, phoneNumber: string, role: number, address: string,customerName:string) {
+async function addUser(firstName: string, middleName: string, lastName: string, email: string, phoneNumber: string, role: number, address: string, customerName: string) {
 
     let newMember = {
         firstName: firstName,
@@ -88,7 +89,7 @@ async function addUser(firstName: string, middleName: string, lastName: string, 
         phoneNumber: phoneNumber,
         role: role,
         address: address,
-        customerName:customerName
+        customerName: customerName
     }
     let response = await fetch(baseUrl, {
         method: 'POST',
@@ -175,7 +176,7 @@ function editRow(no: number) {
     rowLname.setAttribute("contenteditable", "true");
     rowEmail.setAttribute("contenteditable", "true");
     rowPhone.setAttribute("contenteditable", "true");
-    rowRole.disabled=false;
+    rowRole.disabled = false;
     rowAddress.setAttribute("contenteditable", "true");
     rowCustomerName.setAttribute("contenteditable", "true");
 }
@@ -209,7 +210,7 @@ function getCurrentRowData(no: number) {
         phoneNumber: rowPhone,
         role: rowRole,
         address: rowAddress,
-        customerName:rowCustomerName
+        customerName: rowCustomerName
 
     }
 
@@ -226,7 +227,7 @@ function showTable() {
 
     // EXTRACT VALUE FOR HTML HEADER. 
     let tr = table.insertRow(-1);
-    let headerElements = ["id", "First Name", "Middle Name", "Last Name", "Email", "Phone Number", "Role", "Address","Customer Name"];
+    let headerElements = ["id", "First Name", "Middle Name", "Last Name", "Email", "Phone Number", "Role", "Address", "Customer Name"];
 
     for (let i = 0; i < headerElements.length; i++) {
         let th = document.createElement("th");      // TABLE HEADER.
@@ -298,7 +299,7 @@ function showTable() {
         cell7.id = "row" + (i) + "Role";
         let selectRoleList = document.createElement("select");
         selectRoleList.id = "row" + (i) + "SelectRole";
-        selectRoleList.setAttribute("disabled","true")
+        selectRoleList.setAttribute("disabled", "true")
         let role = +crudObject.items[i].role;
         cell7.appendChild(selectRoleList)
 
@@ -469,7 +470,7 @@ function addUserSubmit(e: any) {
 
 
 
-    addUser(firstName, middleName, lastName, email, phoneNumber, role, address,customerName).then((response) => {
+    addUser(firstName, middleName, lastName, email, phoneNumber, role, address, customerName).then((response) => {
         alert(response.message);
 
     }).then(() => {
