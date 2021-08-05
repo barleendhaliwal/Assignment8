@@ -90,8 +90,8 @@ router.post("/", (req: Request, res: Response) => {
                 throw err
             }
             if (result.rows.length !== 0) {
-                //method not allowed: The server has received and recognized the request, but has rejected the specific request method
-                res.status(405).json({ message: `User Already Exists` })
+                //400 - client error - sent invalid user info
+                res.status(400).json({ message: `User Already Exists` })
                 return;
             }
             else {
@@ -102,8 +102,8 @@ router.post("/", (req: Request, res: Response) => {
                         throw err;
                     }
                     if (resultRole.rows.length == 0) {
-
-                        res.status(405).json({ message: `User Role does not exist !` })
+                        //400 - client error - sent invalid role
+                        res.status(400).json({ message: `User Role does not exist !` })
                         return;
                       
                     }
@@ -115,8 +115,8 @@ router.post("/", (req: Request, res: Response) => {
                                 throw err;
                             }
                             if (resultCustomer.rows.length == 0) {
-
-                                res.status(405).json({ message: `Customer does not exist !` })
+                                //400 - client error - sent invalid customer
+                                res.status(400).json({ message: `Customer does not exist !` })
                                 return;
                                 
                             }
@@ -179,8 +179,8 @@ router.put('/:id', (req: Request, res: Response) => {
                         throw err;
                     }
                     if (resultRole.rows.length == 0) {
-                        //405 - method not allowed
-                        res.status(405).json({ message: `User Role does not exist !` })
+                        //400 - client error - sent invalid role
+                        res.status(400).json({ message: `User Role does not exist !` })
                         return;
                     }
                     else {
@@ -190,8 +190,8 @@ router.put('/:id', (req: Request, res: Response) => {
                                 throw err;
                             }
                             if (resultCustomer.rows.length == 0) {
-                                //405 - method not allowed
-                                res.status(405).json({ message: `Customer does not exist !`,success:0 })
+                                //400 - client error - sent invalid customer
+                                res.status(400).json({ message: `Customer does not exist !`,success:0 })
                                 return;
                             }
                             else {
