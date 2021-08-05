@@ -78,7 +78,7 @@ class Crud<T> {
 let crudObject = new Crud<User>();  //array of objects to be displayed on frontend
 
 //API CALLS ========================================================================================================================================
-async function addUser(firstName: string, middleName: string, lastName: string, email: string, phoneNumber: string, role: number, address: string) {
+async function addUser(firstName: string, middleName: string, lastName: string, email: string, phoneNumber: string, role: number, address: string,customerName:string) {
 
     let newMember = {
         firstName: firstName,
@@ -87,7 +87,8 @@ async function addUser(firstName: string, middleName: string, lastName: string, 
         email: email,
         phoneNumber: phoneNumber,
         role: role,
-        address: address
+        address: address,
+        customerName:customerName
     }
     let response = await fetch(baseUrl, {
         method: 'POST',
@@ -458,7 +459,7 @@ function addUserSubmit(e: any) {
     let phoneNumber = (<HTMLInputElement>document.getElementById("addUserPhoneNumber")!).value;
     let role = +(<HTMLSelectElement>document.getElementById("addUserRole")!).value;
     let address = (<HTMLInputElement>document.getElementById("addUserAddress")!).value;
-
+    let customerName = (<HTMLInputElement>document.getElementById("addUserCustomerName")!).value;
     if (role === Role.SUPERADMIN)
         role = 0;
     else if (role === Role.ADMIN)
@@ -468,7 +469,7 @@ function addUserSubmit(e: any) {
 
 
 
-    addUser(firstName, middleName, lastName, email, phoneNumber, role, address).then((response) => {
+    addUser(firstName, middleName, lastName, email, phoneNumber, role, address,customerName).then((response) => {
         alert(response.message);
 
     }).then(() => {

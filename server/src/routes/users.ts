@@ -72,13 +72,16 @@ router.post("/", (req: Request, res: Response) => {
 
 
     }
+  
 
-
-    if (!newMember.firstName || !newMember.lastName || !newMember.email || !newMember.phoneNumber || !newMember.role || !newMember.address) {
+    if (!newMember.firstName || !newMember.lastName || !newMember.email || !newMember.phoneNumber || newMember.role<0||newMember.role>2 || !newMember.address||!newMember.customerName) {
         res.status(400).json({ message: `Give Correct Input` })
+        return;
+  
     }
     if (newMember.phoneNumber.length !== 10) {
         res.status(400).json({ message: `Phone Number must be 10 digits` })
+        return;
     }
     else {
 
@@ -89,6 +92,7 @@ router.post("/", (req: Request, res: Response) => {
             if (result.rows.length !== 0) {
                 //method not allowed: The server has received and recognized the request, but has rejected the specific request method
                 res.status(405).json({ message: `User Already Exists` })
+                return;
             }
             else {
 
@@ -100,6 +104,8 @@ router.post("/", (req: Request, res: Response) => {
                     if (resultRole.rows.length == 0) {
 
                         res.status(400).json({ message: `User Role does not exist !` })
+                        return;
+                      
                     }
                     else {
 
@@ -111,6 +117,8 @@ router.post("/", (req: Request, res: Response) => {
                             if (resultCustomer.rows.length == 0) {
 
                                 res.status(400).json({ message: `Customer does not exist !` })
+                                return;
+                                
                             }
                             else {
 
@@ -147,6 +155,7 @@ router.put('/:id', (req: Request, res: Response) => {
         if (result.rows.length === 0) {
 
             res.status(404).json({ message: `User Does Not Exists` }) //404 - Requested for resource which doesn't exist
+            return;
         }
         else {
             let firstName = req.body.firstName;
@@ -159,6 +168,7 @@ router.put('/:id', (req: Request, res: Response) => {
             let customerName = req.body.customerName;
             if (phoneNumber.length !== 10) {
                 res.status(400).json({ message: `Phone Number must be 10 digits` })
+                return;
 
             }
             else {
@@ -171,6 +181,7 @@ router.put('/:id', (req: Request, res: Response) => {
                     if (resultRole.rows.length == 0) {
                         //405 - method not allowed
                         res.status(405).json({ message: `User Role does not exist !` })
+                        return;
                     }
                     else {
                         const queryValidationCustomer = `SELECT id from customers where LOWER(name)=LOWER('${customerName}');`;
@@ -181,6 +192,7 @@ router.put('/:id', (req: Request, res: Response) => {
                             if (resultCustomer.rows.length == 0) {
                                 //405 - method not allowed
                                 res.status(405).json({ message: `Customer does not exist !` })
+                                return;
                             }
                             else {
                                 const query = `UPDATE users SET "firstName"='${firstName}', "middleName"='${middleName}', "lastName"='${lastName}', email='${email}', "phoneNumber"='${phoneNumber}', role=${role}, address='${address}', "customerId"='${resultCustomer.rows[0].id}' where id=${id};`;
@@ -225,6 +237,7 @@ router.delete('/:id', (req: Request, res: Response) => {
         if (result.rows.length === 0) {
             //404 - request for a resource that does not exist
             res.status(404).json({ message: `User Does Not Exists` })
+            return;
         }
         else {
 
